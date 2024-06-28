@@ -18,7 +18,12 @@ I am currently learning machine learning at Symbiosis Skills and Professional Un
     ```bash
     git clone https://github.com/yourusername/your-repo-name.git
     ```
-2. **Open the Jupyter notebook or run the script**.
+
+2. **Navigate to the desired date's folder**:
+    ```bash
+    cd YYYY-MM-DD
+    ```
+3. **Open the Jupyter notebook or run the script**.
 
 ## Contact
 
