@@ -16,7 +16,7 @@ I am currently learning machine learning at Symbiosis Skills and Professional Un
 
 1. **Clone the repository**:
     ```bash
-    git clone https://github.com/yourusername/your-repo-name.git
+    git clone https://github.com/siddhu290/SSPU_Machine_Learning.git
     ```
 
 2. **Navigate to the desired date's folder**:
