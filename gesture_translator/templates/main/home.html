@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Gesture Translator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center">
+        <div class="hero-section py-5">
+            <h1 class="display-4 mb-4">
+                <i class="fas fa-hands text-primary"></i>
+                Welcome to Gesture Translator
+            </h1>
+            <p class="lead mb-4">
+                Translate hand gestures to text and speech using computer vision and AI.
+                Perfect for users who cannot speak or have communication difficulties.
+            </p>
+            
+            {% if not user.is_authenticated %}
+                <div class="mb-4">
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-user-plus"></i> Get Started
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </div>
+            {% else %}
+                <div class="mb-4">
+                    <a href="{% url 'gesture_recognition' %}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-video"></i> Start Recognition
+                    </a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="text-primary mb-3">
+                    <i class="fas fa-eye fa-3x"></i>
+                </div>
+                <h5 class="card-title">Computer Vision</h5>
+                <p class="card-text">
+                    Advanced hand gesture recognition using MediaPipe and OpenCV 
+                    for real-time detection and analysis.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="text-success mb-3">
+                    <i class="fas fa-brain fa-3x"></i>
+                </div>
+                <h5 class="card-title">AI Translation</h5>
+                <p class="card-text">
+                    Natural language processing to translate recognized gestures 
+                    into meaningful sentences and phrases.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="text-info mb-3">
+                    <i class="fas fa-volume-up fa-3x"></i>
+                </div>
+                <h5 class="card-title">Text-to-Speech</h5>
+                <p class="card-text">
+                    Convert translated text to natural-sounding speech 
+                    for better communication accessibility.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-lg-10 mx-auto">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h3 class="mb-3">How It Works</h3>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                            1
+                        </div>
+                        <h6>Capture Gestures</h6>
+                        <p class="small">Use your camera to capture hand gestures in real-time</p>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="step-number bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                            2
+                        </div>
+                        <h6>Analyze Movement</h6>
+                        <p class="small">AI analyzes hand movements and recognizes gesture patterns</p>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="step-number bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                            3
+                        </div>
+                        <h6>Translate Text</h6>
+                        <p class="small">Convert gestures into meaningful text and sentences</p>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="step-number bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                            4
+                        </div>
+                        <h6>Generate Speech</h6>
+                        <p class="small">Transform text to natural-sounding audio output</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

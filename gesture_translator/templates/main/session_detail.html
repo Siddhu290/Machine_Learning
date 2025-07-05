@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ session.session_name }} - Session Detail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>
+                    <i class="fas fa-eye text-primary"></i>
+                    {{ session.session_name }}
+                </h2>
+                <p class="text-muted mb-0">
+                    Created on {{ session.created_at|date:"F d, Y" }} at {{ session.created_at|time:"H:i" }}
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'session_history' %}" class="btn btn-secondary me-2">
+                    <i class="fas fa-arrow-left"></i> Back to History
+                </a>
+                {% if session.is_active %}
+                    <a href="{% url 'gesture_recognition' %}" class="btn btn-primary">
+                        <i class="fas fa-video"></i> Continue Session
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle"></i>
+                    Session Info
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Status:</strong>
+                    <div class="mt-1">
+                        {% if session.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Completed</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Total Translations:</strong>
+                    <div class="mt-1">
+                        <span class="badge bg-info">{{ translations.count }}</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Duration:</strong>
+                    <div class="mt-1">
+                        {% if translations %}
+                            {% with first=translations.last last=translations.first %}
+                                {{ first.timestamp|timesince:last.timestamp }}
+                            {% endwith %}
+                        {% else %}
+                            <span class="text-muted">No data</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-0">
+                    <strong>Average Confidence:</strong>
+                    <div class="mt-1">
+                        {% if translations %}
+                            {% with avg_conf=translations|length %}
+                                {% if avg_conf > 0 %}
+                                    <span class="badge bg-success">
+                                        {% widthratio translations.0.confidence_score 1 100 %}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">No data</span>
+                                {% endif %}
+                            {% endwith %}
+                        {% else %}
+                            <span class="text-muted">No data</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-list"></i>
+                    Translation History
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if translations %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Gesture</th>
+                                    <th>Translation</th>
+                                    <th>Confidence</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for translation in translations %}
+                                <tr>
+                                    <td>
+                                        <small>{{ translation.timestamp|time:"H:i:s" }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            {{ translation.gesture_text|capfirst }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 300px;" title="{{ translation.translated_text }}">
+                                            {{ translation.translated_text }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if translation.confidence_score > 0.7 %}bg-success{% elif translation.confidence_score > 0.4 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ translation.confidence_score|floatformat:2 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary speak-btn" 
+                                                data-text="{{ translation.translated_text }}"
+                                                title="Speak this translation">
+                                            <i class="fas fa-volume-up"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                        <h5>No Translations</h5>
+                        <p class="text-muted">
+                            This session doesn't have any translations yet.
+                        </p>
+                        {% if session.is_active %}
+                            <a href="{% url 'gesture_recognition' %}" class="btn btn-primary">
+                                <i class="fas fa-video"></i> Start Recognition
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for speak buttons
+    document.querySelectorAll('.speak-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const text = this.dataset.text;
+            
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                speechSynthesis.speak(utterance);
+                
+                // Visual feedback
+                const icon = this.querySelector('i');
+                const originalClass = icon.className;
+                icon.className = 'fas fa-volume-up fa-pulse';
+                
+                utterance.onend = function() {
+                    icon.className = originalClass;
+                };
+            } else {
+                alert('Text-to-speech not supported in your browser');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

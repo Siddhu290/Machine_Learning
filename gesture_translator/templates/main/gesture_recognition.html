@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+
+{% block title %}Gesture Recognition - Gesture Translator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-video text-primary"></i>
+                    Live Gesture Recognition
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div id="camera-container" class="position-relative">
+                        <video id="video" width="640" height="480" autoplay muted class="border rounded"></video>
+                        <canvas id="canvas" width="640" height="480" class="position-absolute top-0 start-0"></canvas>
+                        <div id="camera-status" class="position-absolute top-0 end-0 m-2">
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-circle-notch fa-spin"></i> Initializing...
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button id="start-recognition" class="btn btn-success me-2">
+                        <i class="fas fa-play"></i> Start Recognition
+                    </button>
+                    <button id="stop-recognition" class="btn btn-danger me-2" disabled>
+                        <i class="fas fa-stop"></i> Stop Recognition
+                    </button>
+                    <button id="toggle-camera" class="btn btn-secondary">
+                        <i class="fas fa-camera"></i> Toggle Camera
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-comment-alt text-success"></i>
+                    Translation Output
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="translation-output" class="bg-light p-4 rounded mb-3" style="min-height: 120px;">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-hands fa-2x mb-3"></i>
+                        <p>Translated text will appear here...</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <button id="speak-text" class="btn btn-info w-100" disabled>
+                            <i class="fas fa-volume-up"></i> Speak Text
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button id="clear-text" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog"></i>
+                    Recognition Settings
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Recognition Mode</label>
+                    <select id="recognition-mode" class="form-select">
+                        <option value="continuous">Continuous</option>
+                        <option value="manual">Manual Capture</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Confidence Threshold</label>
+                    <input type="range" id="confidence-threshold" class="form-range" min="0.1" max="1.0" step="0.1" value="0.5">
+                    <div class="d-flex justify-content-between">
+                        <small>0.1</small>
+                        <small>1.0</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="auto-speak" checked>
+                        <label class="form-check-label" for="auto-speak">
+                            Auto-speak translations
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i>
+                    Quick Gestures
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% for gesture in predefined_gestures %}
+                    <button class="btn btn-outline-primary btn-sm quick-gesture" 
+                            data-gesture="{{ gesture.gesture_name }}" 
+                            data-translation="{{ gesture.default_translation }}">
+                        {{ gesture.gesture_name|title }}
+                    </button>
+                    {% empty %}
+                    <p class="text-muted small">No predefined gestures available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i>
+                    Recognition Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="status-info">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Camera:</span>
+                        <span id="camera-status-text" class="badge bg-secondary">Not Started</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Recognition:</span>
+                        <span id="recognition-status-text" class="badge bg-secondary">Stopped</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Last Detection:</span>
+                        <span id="last-detection-text" class="badge bg-light text-dark">None</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Session:</span>
+                        <span class="badge bg-info">{{ session.session_name }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+class GestureRecognizer {
+    constructor() {
+        this.video = document.getElementById('video');
+        this.canvas = document.getElementById('canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.isRecognizing = false;
+        this.stream = null;
+        
+        this.initializeElements();
+        this.setupEventListeners();
+    }
+    
+    initializeElements() {
+        this.startBtn = document.getElementById('start-recognition');
+        this.stopBtn = document.getElementById('stop-recognition');
+        this.toggleCameraBtn = document.getElementById('toggle-camera');
+        this.speakBtn = document.getElementById('speak-text');
+        this.clearBtn = document.getElementById('clear-text');
+        this.translationOutput = document.getElementById('translation-output');
+        this.cameraStatus = document.getElementById('camera-status');
+        this.quickGesturesBtns = document.querySelectorAll('.quick-gesture');
+    }
+    
+    setupEventListeners() {
+        this.startBtn.addEventListener('click', () => this.startRecognition());
+        this.stopBtn.addEventListener('click', () => this.stopRecognition());
+        this.toggleCameraBtn.addEventListener('click', () => this.toggleCamera());
+        this.speakBtn.addEventListener('click', () => this.speakText());
+        this.clearBtn.addEventListener('click', () => this.clearText());
+        
+        this.quickGesturesBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const gesture = e.target.dataset.gesture;
+                const translation = e.target.dataset.translation;
+                this.processQuickGesture(gesture, translation);
+            });
+        });
+    }
+    
+    async initializeCamera() {
+        try {
+            this.stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { width: 640, height: 480 } 
+            });
+            this.video.srcObject = this.stream;
+            this.updateCameraStatus('Camera Active', 'bg-success');
+            this.updateStatus('camera', 'Active', 'bg-success');
+            return true;
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            this.updateCameraStatus('Camera Error', 'bg-danger');
+            this.updateStatus('camera', 'Error', 'bg-danger');
+            alert('Unable to access camera. Please check permissions.');
+            return false;
+        }
+    }
+    
+    async startRecognition() {
+        if (!this.stream) {
+            const cameraOk = await this.initializeCamera();
+            if (!cameraOk) return;
+        }
+        
+        this.isRecognizing = true;
+        this.startBtn.disabled = true;
+        this.stopBtn.disabled = false;
+        this.updateStatus('recognition', 'Active', 'bg-success');
+        
+        // Start mock recognition loop
+        this.recognitionLoop();
+    }
+    
+    stopRecognition() {
+        this.isRecognizing = false;
+        this.startBtn.disabled = false;
+        this.stopBtn.disabled = true;
+        this.updateStatus('recognition', 'Stopped', 'bg-secondary');
+    }
+    
+    async toggleCamera() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.stream = null;
+            this.video.srcObject = null;
+            this.updateCameraStatus('Camera Off', 'bg-secondary');
+            this.updateStatus('camera', 'Off', 'bg-secondary');
+        } else {
+            await this.initializeCamera();
+        }
+    }
+    
+    recognitionLoop() {
+        if (!this.isRecognizing) return;
+        
+        // Mock gesture recognition
+        setTimeout(() => {
+            if (this.isRecognizing) {
+                // Simulate random gesture detection
+                const mockGestures = ['hello', 'thanks', 'help', 'water', 'food'];
+                const randomGesture = mockGestures[Math.floor(Math.random() * mockGestures.length)];
+                this.processGesture(randomGesture);
+                this.recognitionLoop();
+            }
+        }, 3000 + Math.random() * 5000); // Random interval between 3-8 seconds
+    }
+    
+    async processGesture(gestureText) {
+        try {
+            const response = await fetch('/process-gesture/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ gesture_data: gestureText })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.displayTranslation(data.translated_text, data.confidence);
+                this.updateStatus('last-detection', gestureText, 'bg-info');
+                
+                if (document.getElementById('auto-speak').checked) {
+                    this.speakText(data.translated_text);
+                }
+            } else {
+                console.error('Gesture processing error:', data.error);
+            }
+        } catch (error) {
+            console.error('Error processing gesture:', error);
+        }
+    }
+    
+    processQuickGesture(gesture, translation) {
+        this.displayTranslation(translation, 1.0);
+        this.updateStatus('last-detection', gesture, 'bg-info');
+        
+        if (document.getElementById('auto-speak').checked) {
+            this.speakText(translation);
+        }
+    }
+    
+    displayTranslation(text, confidence) {
+        const confidenceClass = confidence > 0.7 ? 'success' : confidence > 0.4 ? 'warning' : 'danger';
+        
+        this.translationOutput.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6>Translation:</h6>
+                <span class="badge bg-${confidenceClass}">
+                    ${(confidence * 100).toFixed(0)}% confidence
+                </span>
+            </div>
+            <p class="mb-0 fs-5">${text}</p>
+            <small class="text-muted">Generated at ${new Date().toLocaleTimeString()}</small>
+        `;
+        
+        this.speakBtn.disabled = false;
+    }
+    
+    speakText(text = null) {
+        const textToSpeak = text || this.translationOutput.querySelector('p')?.textContent;
+        
+        if (textToSpeak && 'speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.rate = 0.8;
+            utterance.pitch = 1;
+            speechSynthesis.speak(utterance);
+        } else {
+            alert('Text-to-speech not supported in your browser');
+        }
+    }
+    
+    clearText() {
+        this.translationOutput.innerHTML = `
+            <div class="text-center text-muted">
+                <i class="fas fa-hands fa-2x mb-3"></i>
+                <p>Translated text will appear here...</p>
+            </div>
+        `;
+        this.speakBtn.disabled = true;
+    }
+    
+    updateCameraStatus(text, bgClass) {
+        this.cameraStatus.innerHTML = `
+            <span class="badge ${bgClass}">
+                <i class="fas fa-circle"></i> ${text}
+            </span>
+        `;
+    }
+    
+    updateStatus(type, text, bgClass) {
+        const element = document.getElementById(`${type}-status-text`);
+        if (element) {
+            element.textContent = text;
+            element.className = `badge ${bgClass}`;
+        }
+    }
+}
+
+// Initialize gesture recognizer when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const recognizer = new GestureRecognizer();
+});
+</script>
+{% endblock %}

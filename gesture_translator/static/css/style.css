@@ -1,0 +1,188 @@
+/* Custom styles for Gesture Translator */
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.step-number {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* Camera container styles */
+#camera-container {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+#video {
+    background-color: #000;
+    border-radius: 8px;
+}
+
+#canvas {
+    pointer-events: none;
+    border-radius: 8px;
+}
+
+/* Status badges */
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Animation for loading states */
+.fa-spin {
+    animation: fa-spin 2s infinite linear;
+}
+
+/* Custom background colors */
+.bg-primary {
+    background-color: #667eea !important;
+}
+
+.bg-success {
+    background-color: #51cf66 !important;
+}
+
+.bg-info {
+    background-color: #74c0fc !important;
+}
+
+.bg-warning {
+    background-color: #ffd43b !important;
+}
+
+/* Form styles */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    transition: border-color 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Table styles */
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border: none;
+    font-weight: 600;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    .card, .btn {
+        transition: none;
+    }
+    
+    .fa-spin {
+        animation: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: #e9ecef;
+    }
+    
+    .card {
+        background-color: #2d3748;
+        border: 1px solid #4a5568;
+    }
+    
+    .table th {
+        background-color: #4a5568;
+        color: #e9ecef;
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 1rem !important;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    #video {
+        width: 100%;
+        height: auto;
+    }
+    
+    #canvas {
+        width: 100%;
+        height: auto;
+    }
+}
+
+/* Utility classes */
+.opacity-75 {
+    opacity: 0.75;
+}
+
+.text-decoration-none {
+    text-decoration: none !important;
+}
+
+/* Loading animation */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

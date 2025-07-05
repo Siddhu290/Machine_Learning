@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Gesture Translator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-tachometer-alt text-primary"></i>
+            Welcome back, {{ user.first_name|default:user.username }}!
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Total Sessions</h6>
+                        <h3>{{ recent_sessions|length }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-video fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Translations</h6>
+                        <h3>{{ recent_translations|length }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-language fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Member Since</h6>
+                        <h6>{{ profile.created_at|date:"M Y" }}</h6>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Last Activity</h6>
+                        <h6>{{ profile.last_activity|timesince }} ago</h6>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history"></i>
+                    Recent Translations
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_translations %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Gesture</th>
+                                    <th>Translation</th>
+                                    <th>Confidence</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for translation in recent_translations %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ translation.gesture_text|capfirst }}</span>
+                                    </td>
+                                    <td>{{ translation.translated_text|truncatechars:50 }}</td>
+                                    <td>
+                                        <span class="badge {% if translation.confidence_score > 0.7 %}bg-success{% elif translation.confidence_score > 0.4 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ translation.confidence_score|floatformat:2 }}
+                                        </span>
+                                    </td>
+                                    <td>{{ translation.timestamp|timesince }} ago</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-language fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No translations yet. Start using gesture recognition!</p>
+                        <a href="{% url 'gesture_recognition' %}" class="btn btn-primary">
+                            <i class="fas fa-video"></i> Start Now
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-rocket"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'gesture_recognition' %}" class="btn btn-primary">
+                        <i class="fas fa-video"></i> Start Gesture Recognition
+                    </a>
+                    <a href="{% url 'session_history' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-history"></i> View All Sessions
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tips"></i>
+                    Tips & Tricks
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        Ensure good lighting for better recognition
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-hand-paper text-info"></i>
+                        Keep hands visible and within frame
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-clock text-success"></i>
+                        Practice gestures for improved accuracy
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
